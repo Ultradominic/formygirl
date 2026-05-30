@@ -1,64 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>❤️ Вопрос ❤️</title>
+<style>
+body{
+margin:0;
+height:100vh;
+overflow:hidden;
+font-family:Arial;
+background:linear-gradient(45deg,#ff4d8d,#ff9acb,#ffd1e8);
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.card{
+background:rgba(255,255,255,0.2);
+backdrop-filter:blur(10px);
+padding:30px;
+border-radius:25px;
+text-align:center;
+color:white;
+width:90%;
+max-width:500px;
+}
+
+#screen2,#screen3{display:none;}
+
+button{
+padding:12px 25px;
+border:none;
+border-radius:12px;
+font-size:18px;
+cursor:pointer;
+}
+
+.buttons{
+position:relative;
+width:300px;
+height:140px;
+margin:30px auto 0;
+}
+
+#yes{
+position:absolute;
+left:40px;
+top:50px;
+background:white;
+color:#ff4d8d;
+}
+
+#no{
+position:absolute;
+left:160px;
+top:50px;
+background:#ff4d8d;
+color:white;
+transition:0.08s linear;
+touch-action:none;
+}
+</style>
+</head>
+<body>
+
+<div class="card" id="screen1">
+<h1>❤️ У меня есть вопрос ❤️</h1>
+<button id="start">Узнать</button>
+</div>
+
+<div class="card" id="screen2">
+<h1>Пойдёшь со мной на свидание? ❤️</h1>
+<div class="buttons">
+<button id="yes">Да 💖</button>
+<button id="no">Нет 🙈</button>
+</div>
+</div>
+
+<div class="card" id="screen3">
+<h1>💖 Урааа! 💖</h1>
+<p>Я знал, что ты согласишься ❤️</p>
+</div>
+
 <script>
-const no = document.getElementById("no");
-const yes = document.getElementById("yes");
+// элементы
+const screen1=document.getElementById("screen1");
+const screen2=document.getElementById("screen2");
+const screen3=document.getElementById("screen3");
+const start=document.getElementById("start");
+const yes=document.getElementById("yes");
+const no=document.getElementById("no");
+const box=document.querySelector(".buttons");
 
-function getSafePosition() {
-  const margin = 10;
+// стартовый экран
+start.addEventListener("click",()=>{
+    screen1.style.display="none";
+    screen2.style.display="block";
+    placeStart();
+});
 
-  const maxX = window.innerWidth - no.offsetWidth - margin;
-  const maxY = window.innerHeight - no.offsetHeight - margin;
-
-  return {
-    x: margin + Math.random() * (maxX - margin),
-    y: margin + Math.random() * (maxY - margin)
-  };
-}
-
-// старт рядом с "Да"
+// кнопка "Нет" — старт рядом с "Да"
 function placeStart() {
-  const r = yes.getBoundingClientRect();
-
-  no.style.position = "fixed";
-  no.style.left = r.right + 30 + "px";
-  no.style.top = r.top + "px";
+    const r = yes.getBoundingClientRect();
+    no.style.position = "fixed";
+    no.style.left = r.right + 30 + "px";
+    no.style.top = r.top + "px";
 }
 
+// генерация случайной позиции в пределах экрана
+function getSafePosition() {
+    const margin = 10;
+    const maxX = window.innerWidth - no.offsetWidth - margin;
+    const maxY = window.innerHeight - no.offsetHeight - margin;
+    return {
+        x: margin + Math.random() * (maxX - margin),
+        y: margin + Math.random() * (maxY - margin)
+    };
+}
+
+// движение кнопки "Нет"
 function escapeFast() {
-  const pos = getSafePosition();
-
-  // быстрый "рывок"
-  no.style.transition = "0.12s cubic-bezier(.2,.9,.2,1)";
-  no.style.left = pos.x + "px";
-  no.style.top = pos.y + "px";
+    const pos = getSafePosition();
+    no.style.transition = "0.12s cubic-bezier(.2,.9,.2,1)";
+    no.style.left = pos.x + "px";
+    no.style.top = pos.y + "px";
 }
 
-// ПК — убегает при приближении
+// ПК
 no.addEventListener("mouseenter", escapeFast);
 no.addEventListener("mousemove", escapeFast);
 no.addEventListener("click", escapeFast);
 
-// МОБИЛА — убегает от пальца
+// Телефон
 document.addEventListener("touchmove", (e) => {
-  const t = e.touches[0];
-  if (!t) return;
-
-  const rect = no.getBoundingClientRect();
-
-  const dx = t.clientX - (rect.left + rect.width / 2);
-  const dy = t.clientY - (rect.top + rect.height / 2);
-
-  const dist = Math.sqrt(dx*dx + dy*dy);
-
-  // чем ближе палец — тем быстрее убегает
-  if (dist < 140) {
-    escapeFast();
-  }
-
-}, { passive: true });
+    const t = e.touches[0];
+    if (!t) return;
+    const rect = no.getBoundingClientRect();
+    const dx = t.clientX - (rect.left + rect.width / 2);
+    const dy = t.clientY - (rect.top + rect.height / 2);
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if(dist < 140){
+        escapeFast();
+    }
+},{passive:true});
 
 no.addEventListener("touchstart", escapeFast);
 
+// адаптация при ресайзе
 window.addEventListener("resize", placeStart);
-
 setTimeout(placeStart, 150);
+
+// кнопка "Да" — финал
+yes.addEventListener("click",()=>{
+    screen2.style.display="none";
+    no.style.display="none";
+    screen3.style.display="block";
+
+    // эффект падающих сердечек
+    for(let i=0;i<100;i++){
+        const h=document.createElement("div");
+        h.innerHTML=["💖","❤️","💕","💘"][Math.floor(Math.random()*4)];
+        h.style.position="fixed";
+        h.style.left=Math.random()*100+"vw";
+        h.style.top="-50px";
+        h.style.fontSize=(20+Math.random()*40)+"px";
+        h.style.animation="fall 3s linear forwards";
+        document.body.appendChild(h);
+        setTimeout(()=>h.remove(),4000);
+    }
+});
+
+// анимация падения
+const style=document.createElement("style");
+style.innerHTML=`
+@keyframes fall{
+    to{transform:translateY(110vh);opacity:0;}
+}
+`;
+document.head.appendChild(style);
 </script>
+
+</body>
+</html>

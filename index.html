@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>❤️ Вопрос ❤️</title>
 <style>
 body{
@@ -58,11 +58,159 @@ left:160px;
 top:50px;
 background:#ff4d8d;
 color:white;
-transition:0.08s linear;
+transition:left 0.08s linear, top 0.08s linear;
 touch-action:none;
 }
 </style>
 </head>
+<body>
+
+<div class="card" id="screen1">
+<h1>❤️ У меня есть вопрос ❤️</h1>
+<button id="start">Узнать</button>
+</div>
+
+<div class="card" id="screen2">
+<h1>Пойдёшь со мной на свидание? ❤️</h1>
+<div class="buttons">
+<button id="yes">Да 💖</button>
+<button id="no">Нет 🙈</button>
+</div>
+</div>
+
+<div class="card" id="screen3">
+<h1>💖 Урааа! 💖</h1>
+<p>Я знал, что ты согласишься ❤️</p>
+</div>
+
+<script>
+// элементы
+const screen1=document.getElementById("screen1");
+const screen2=document.getElementById("screen2");
+const screen3=document.getElementById("screen3");
+const start=document.getElementById("start");
+const yes=document.getElementById("yes");
+const no=document.getElementById("no");
+const box=document.querySelector(".buttons");
+
+// стартовый экран
+start.addEventListener("click",()=>{
+    screen1.style.display="none";
+    screen2.style.display="block";
+    placeStart();
+});
+
+// кнопка "Нет" — старт рядом с "Да"
+function placeStart() {
+    const r = yes.getBoundingClientRect();
+    const margin = 20;
+    const maxX = window.innerWidth - no.offsetWidth - margin;
+    
+    let left = r.right + margin;
+    let top = r.top;
+    
+    // не вылетаем за правый край
+    if (left > maxX) {
+        left = r.left - no.offsetWidth - margin;
+    }
+    
+    // не вылетаем за границы по вертикали
+    if (top < margin) top = margin;
+    if (top + no.offsetHeight > window.innerHeight - margin) {
+        top = window.innerHeight - no.offsetHeight - margin;
+    }
+    
+    no.style.position = "fixed";
+    no.style.left = Math.max(margin, Math.min(maxX, left)) + "px";
+    no.style.top = Math.max(margin, Math.min(window.innerHeight - no.offsetHeight - margin, top)) + "px";
+}
+
+// генерация случайной позиции в пределах экрана
+function getSafePosition() {
+    const margin = 15;
+    const maxX = window.innerWidth - no.offsetWidth - margin;
+    const maxY = window.innerHeight - no.offsetHeight - margin;
+    return {
+        x: margin + Math.random() * (maxX - margin),
+        y: margin + Math.random() * (maxY - margin)
+    };
+}
+
+// движение кнопки "Нет" — быстрая реакция
+function escapeFast() {
+    const pos = getSafePosition();
+    no.style.transition = "left 0.08s linear, top 0.08s linear";
+    no.style.left = pos.x + "px";
+    no.style.top = pos.y + "px";
+}
+
+// ПК — максимально чувствительно
+no.addEventListener("mouseenter", escapeFast);
+no.addEventListener("mousemove", escapeFast);
+no.addEventListener("click", (e) => {
+    e.preventDefault();
+    escapeFast();
+});
+
+// Телефон — реагирует на касание
+no.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    escapeFast();
+}, { passive: false });
+
+// Защита от вылета за экран при резком движении на мобилках
+document.addEventListener("touchmove", (e) => {
+    const t = e.touches[0];
+    if (!t) return;
+    const rect = no.getBoundingClientRect();
+    const dx = t.clientX - (rect.left + rect.width / 2);
+    const dy = t.clientY - (rect.top + rect.height / 2);
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if(dist < 140){
+        e.preventDefault();
+        escapeFast();
+    }
+}, { passive: false });
+
+// адаптация при ресайзе
+window.addEventListener("resize", () => {
+    if (screen2.style.display !== "none") {
+        placeStart();
+    }
+});
+
+// кнопка "Да" — финал (ВСЁ ОСТАЛОСЬ КАК БЫЛО)
+yes.addEventListener("click",()=>{
+    screen2.style.display="none";
+    no.style.display="none";
+    screen3.style.display="block";
+
+    // эффект падающих сердечек
+    for(let i=0;i<100;i++){
+        const h=document.createElement("div");
+        h.innerHTML=["💖","❤️","💕","💘"][Math.floor(Math.random()*4)];
+        h.style.position="fixed";
+        h.style.left=Math.random()*100+"vw";
+        h.style.top="-50px";
+        h.style.fontSize=(20+Math.random()*40)+"px";
+        h.style.animation="fall 3s linear forwards";
+        document.body.appendChild(h);
+        setTimeout(()=>h.remove(),4000);
+    }
+});
+
+// анимация падения (ТОЖЕ ОСТАЛОСЬ)
+const style=document.createElement("style");
+style.innerHTML=`
+@keyframes fall{
+    to{transform:translateY(110vh);opacity:0;}
+}
+`;
+document.head.appendChild(style);
+</script>
+
+</body>
+</html></head>
 <body>
 
 <div class="card" id="screen1">

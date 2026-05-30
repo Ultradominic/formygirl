@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>❤️ Вопрос ❤️</title>
-
 <style>
 body{
 margin:0;
@@ -16,7 +15,6 @@ display:flex;
 justify-content:center;
 align-items:center;
 }
-
 .card{
 background:rgba(255,255,255,0.2);
 backdrop-filter:blur(10px);
@@ -27,9 +25,7 @@ color:white;
 width:90%;
 max-width:500px;
 }
-
 #screen2,#screen3{display:none;}
-
 button{
 padding:12px 25px;
 border:none;
@@ -37,14 +33,12 @@ border-radius:12px;
 font-size:18px;
 cursor:pointer;
 }
-
 .buttons{
 position:relative;
 width:320px;
 height:160px;
 margin:30px auto 0;
 }
-
 #yes{
 position:absolute;
 left:40px;
@@ -52,7 +46,6 @@ top:60px;
 background:white;
 color:#ff4d8d;
 }
-
 #no{
 position:absolute;
 left:180px;
@@ -64,7 +57,6 @@ touch-action:none;
 }
 </style>
 </head>
-
 <body>
 
 <div class="card" id="screen1">
@@ -74,7 +66,6 @@ touch-action:none;
 
 <div class="card" id="screen2">
 <h1>Пойдёшь со мной на свидание? ❤️</h1>
-
 <div class="buttons">
 <button id="yes">Да 💖</button>
 <button id="no">Нет 🙈</button>
@@ -87,55 +78,45 @@ touch-action:none;
 </div>
 
 <script>
-
 const screen1=document.getElementById("screen1");
 const screen2=document.getElementById("screen2");
 const screen3=document.getElementById("screen3");
-
 const start=document.getElementById("start");
 const yes=document.getElementById("yes");
 const no=document.getElementById("no");
 const box=document.querySelector(".buttons");
 
+// Показ второго экрана
 start.addEventListener("click",()=>{
     screen1.style.display="none";
     screen2.style.display="block";
-
     placeStart();
 });
 
-// старт рядом с "Да"
+// стартовая позиция рядом с "Да"
 function placeStart(){
     const r=yes.getBoundingClientRect();
-
-    no.style.position="fixed";
-
-    let x=r.right+25;
-    let y=r.top;
-
-    // 🔥 защита от краёв экрана
+    no.style.position = "fixed";
     const margin=10;
+    let x=r.right + 30;
+    let y=r.top;
     x=Math.max(margin, Math.min(window.innerWidth-no.offsetWidth-margin, x));
     y=Math.max(margin, Math.min(window.innerHeight-no.offsetHeight-margin, y));
-
     no.style.left=x+"px";
     no.style.top=y+"px";
 }
 
-// 🔥 безопасная позиция внутри экрана
+// Ограниченная безопасная позиция для кнопки
 function getSafePosition(){
     const margin=10;
-
     const maxX=window.innerWidth-no.offsetWidth-margin;
     const maxY=window.innerHeight-no.offsetHeight-margin;
-
-    return{
-        x: margin + Math.random()*(maxX-margin),
-        y: margin + Math.random()*(maxY-margin)
-    };
+    let x=Math.random()*(maxX-margin)+margin;
+    let y=Math.random()*(maxY-margin)+margin;
+    return {x,y};
 }
 
-// 💥 мгновенный отскок
+// движение кнопки
 function escape(){
     const pos=getSafePosition();
     no.style.transition="0.08s linear";
@@ -148,7 +129,7 @@ no.addEventListener("mouseenter",escape);
 no.addEventListener("mousemove",escape);
 no.addEventListener("click",escape);
 
-// 📱 МОБИЛА (быстро + без задержки)
+// Телефон
 no.addEventListener("touchstart",(e)=>{
     e.preventDefault();
     escape();
@@ -157,53 +138,47 @@ no.addEventListener("touchstart",(e)=>{
 document.addEventListener("touchmove",(e)=>{
     const t=e.touches[0];
     if(!t) return;
-
     const r=no.getBoundingClientRect();
-
     const dx=t.clientX-(r.left+r.width/2);
     const dy=t.clientY-(r.top+r.height/2);
-
     const dist=Math.sqrt(dx*dx+dy*dy);
-
     if(dist<150){
         escape();
     }
 },{passive:true});
 
-// 💖 "ДА"
+// адаптация при ресайзе
+window.addEventListener("resize",placeStart);
+setTimeout(placeStart, 150);
+
+// кнопка "Да"
 yes.addEventListener("click",()=>{
+    screen2.style.display="none";
+    no.style.display="none";
+    screen3.style.display="block";
 
-screen2.style.display="none";
-no.style.display="none";
-screen3.style.display="block";
-
-for(let i=0;i<100;i++){
-    const h=document.createElement("div");
-    h.innerHTML=["💖","❤️","💕","💘"][Math.floor(Math.random()*4)];
-    h.style.position="fixed";
-    h.style.left=Math.random()*100+"vw";
-    h.style.top="-50px";
-    h.style.fontSize=(20+Math.random()*40)+"px";
-    h.style.animation="fall 3s linear forwards";
-    document.body.appendChild(h);
-
-    setTimeout(()=>h.remove(),4000);
-}
-
+    // падающие сердечки
+    for(let i=0;i<100;i++){
+        const h=document.createElement("div");
+        h.innerHTML=["💖","❤️","💕","💘"][Math.floor(Math.random()*4)];
+        h.style.position="fixed";
+        h.style.left=Math.random()*100+"vw";
+        h.style.top="-50px";
+        h.style.fontSize=(20+Math.random()*40)+"px";
+        h.style.animation="fall 3s linear forwards";
+        document.body.appendChild(h);
+        setTimeout(()=>h.remove(),4000);
+    }
 });
 
-// 🎆 анимация
+// анимация падения
 const style=document.createElement("style");
 style.innerHTML=`
 @keyframes fall{
-to{
-transform:translateY(110vh);
-opacity:0;
-}
+to{transform:translateY(110vh);opacity:0;}
 }
 `;
 document.head.appendChild(style);
-
 </script>
 
 </body>

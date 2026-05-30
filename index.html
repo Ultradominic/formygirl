@@ -1,362 +1,64 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Убегающая кнопка</title>
-  <style>
-    * {
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .container {
-      text-align: center;
-      padding: 20px;
-    }
-
-    h1 {
-      color: white;
-      font-size: 2.5rem;
-      margin-bottom: 2rem;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .buttons {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      position: relative;
-      min-height: 200px;
-    }
-
-    button {
-      padding: 15px 40px;
-      font-size: 1.5rem;
-      font-weight: bold;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      position: fixed;
-      z-index: 1000;
-    }
-
-    #yes {
-      background: linear-gradient(135deg, #00b09b, #96c93d);
-      color: white;
-      position: fixed;
-    }
-
-    #yes:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    }
-
-    #no {
-      background: linear-gradient(135deg, #ff6a88, #ff99ac);
-      color: white;
-      position: fixed;
-      transition: left 0.08s cubic-bezier(0.2, 0.9, 0.4, 1.1), top 0.08s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-      white-space: nowrap;
-    }
-
-    #no:active {
-      transform: scale(0.95);
-    }
-
-    .counter {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(255,255,255,0.9);
-      padding: 10px 20px;
-      border-radius: 50px;
-      font-weight: bold;
-      color: #764ba2;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      z-index: 1001;
-    }
-
-    @media (max-width: 768px) {
-      button {
-        padding: 12px 30px;
-        font-size: 1.2rem;
-      }
-      
-      h1 {
-        font-size: 1.8rem;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="counter">
-    Попыток нажать "Нет": <span id="attemptCount">0</span>
-  </div>
-  
-  <div class="container">
-    <h1>Ты хочешь пойти со мной на свидание? 💖</h1>
-    <div class="buttons">
-      <button id="yes">Да! 😊</button>
-      <button id="no">Нет 😢</button>
-    </div>
-  </div>
-
-  <script>
-    const no = document.getElementById("no");
-    const yes = document.getElementById("yes");
-    const attemptSpan = document.getElementById("attemptCount");
-    
-    let attempts = 0;
-    let isGameActive = true;
-    let animationFrame = null;
-
-    // Стартовая позиция
-    function placeStart() {
-      if (!isGameActive) return;
-      
-      const rect = yes.getBoundingClientRect();
-      const margin = 20;
-      
-      let left = rect.right + margin;
-      let top = rect.top;
-      
-      // Проверка, чтобы не вылезало за экран
-      const maxX = window.innerWidth - no.offsetWidth - margin;
-      if (left > maxX) {
-        left = rect.left - no.offsetWidth - margin;
-      }
-      
-      if (top < margin) top = margin;
-      if (top + no.offsetHeight > window.innerHeight - margin) {
-        top = window.innerHeight - no.offsetHeight - margin;
-      }
-      
-      no.style.left = Math.max(margin, Math.min(maxX, left)) + "px";
-      no.style.top = Math.max(margin, Math.min(window.innerHeight - no.offsetHeight - margin, top)) + "px";
-    }
-
-    // Движение кнопки "Нет"
-    function moveNo() {
-      if (!isGameActive) return;
-      
-      attempts++;
-      attemptSpan.textContent = attempts;
-      
-      // Изменяем текст кнопки при большом количестве попыток
-      if (attempts >= 10) {
-        no.textContent = "Сдаюсь? 😅";
-      }
-      if (attempts >= 20) {
-        no.textContent = "Хватит! 😫";
-      }
-      if (attempts >= 30) {
-        no.textContent = "Ладно, я согласен! 🥺";
-      }
-      
-      const margin = 30;
-      const maxX = window.innerWidth - no.offsetWidth - margin;
-      const maxY = window.innerHeight - no.offsetHeight - margin;
-      
-      // Случайная позиция
-      let x = margin + Math.random() * (maxX - margin);
-      let y = margin + Math.random() * (maxY - margin);
-      
-      // Анимация сжатия
-      no.style.transform = 'scale(0.95)';
-      setTimeout(() => {
-        if (no) no.style.transform = 'scale(1)';
-      }, 80);
-      
-      // Плавное движение
-      if (animationFrame) cancelAnimationFrame(animationFrame);
-      animationFrame = requestAnimationFrame(() => {
-        no.style.left = x + "px";
-        no.style.top = y + "px";
-      });
-    }
-
-    // Победа!
-    function win() {
-      if (!isGameActive) return;
-      
-      isGameActive = false;
-      
-      // Отключаем кнопку "Нет"
-      no.style.display = 'none';
-      
-      // Создаем эффект победы
-      document.body.innerHTML = `
-        <div style="
-          text-align: center; 
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          color: white;
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          animation: fadeIn 1s ease;
-        ">
-          <div style="font-size: 5rem; margin-bottom: 1rem;">🎉🎊💖</div>
-          <h1 style="font-size: 3rem; margin-bottom: 0.5rem;">УРА! 🎉</h1>
-          <p style="font-size: 1.5rem; margin-bottom: 2rem;">Ты сделал(а) правильный выбор!</p>
-          <div style="font-size: 1.2rem; background: rgba(255,255,255,0.2); padding: 20px; border-radius: 20px;">
-            ❤️ Я так счастлив(а)! ❤️
-          </div>
-        </div>
-        <style>
-          @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-          }
-        </style>
-      `;
-    }
-
-    // Обработчики для кнопки "Нет"
-    no.addEventListener("mouseenter", moveNo);
-    no.addEventListener("click", (e) => {
-      e.preventDefault();
-      moveNo();
-    });
-    
-    // Мобильные устройства
-    no.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      moveNo();
-    }, { passive: false });
-    
-    no.addEventListener("touchend", (e) => {
-      e.preventDefault();
-    });
-    
-    // Обработчик для кнопки "Да"
-    yes.addEventListener("click", win);
-    yes.addEventListener("touchstart", win);
-    
-    // При изменении размера окна
-    window.addEventListener("resize", () => {
-      if (isGameActive) {
-        placeStart();
-      }
-    });
-    
-    // Защита от скролла на мобильных
-    document.body.addEventListener('touchmove', (e) => {
-      if (isGameActive) {
-        e.preventDefault();
-      }
-    }, { passive: false });
-    
-    // Запуск после полной загрузки
-    window.addEventListener('load', () => {
-      setTimeout(placeStart, 100);
-    });
-    
-    // Дополнительная защита: если кнопка "Нет" всё же нажата на ПК
-    no.addEventListener('mousemove', (e) => {
-      if (isGameActive) {
-        e.preventDefault();
-      }
-    });
-  </script>
-</body>
-</html></div>
-
-<div class="card" id="screen3">
-<h1>💖 Урахуйаа! 💖</h1>
-<p>Теперь ждём наше свидание ❤️</p>
-</div>
-
 <script>
+const no = document.getElementById("no");
+const yes = document.getElementById("yes");
 
-const screen1=document.getElementById("screen1");
-const screen2=document.getElementById("screen2");
-const screen3=document.getElementById("screen3");
+function getSafePosition() {
+  const margin = 10;
 
-const start=document.getElementById("start");
-const yes=document.getElementById("yes");
-const no=document.getElementById("no");
-const box=document.querySelector(".buttons");
+  const maxX = window.innerWidth - no.offsetWidth - margin;
+  const maxY = window.innerHeight - no.offsetHeight - margin;
 
-// ВАЖНО: нормальный клик на телефоне
-start.addEventListener("click",()=>{
-screen1.style.display="none";
-screen2.style.display="block";
-});
-
-// движение "Нет"
-function escape(){
-
-const maxX=box.clientWidth-100;
-const maxY=box.clientHeight-60;
-
-const x=Math.random()*maxX;
-const y=Math.random()*maxY;
-
-no.style.left=x+"px";
-no.style.top=y+"px";
+  return {
+    x: margin + Math.random() * (maxX - margin),
+    y: margin + Math.random() * (maxY - margin)
+  };
 }
 
-// ПК
-no.addEventListener("mouseenter",escape);
+// старт рядом с "Да"
+function placeStart() {
+  const r = yes.getBoundingClientRect();
 
-// МОБИЛА (главное исправление)
-no.addEventListener("touchstart",(e)=>{
-e.preventDefault();
-escape();
-},{passive:false});
-
-// дополнительная защита
-no.addEventListener("click",escape);
-
-yes.addEventListener("click",()=>{
-
-screen2.style.display="none";
-no.style.display="none";
-screen3.style.display="block";
-
-// сердечки
-for(let i=0;i<80;i++){
-const h=document.createElement("div");
-h.innerHTML="💖";
-h.style.position="fixed";
-h.style.left=Math.random()*100+"vw";
-h.style.top="-50px";
-h.style.fontSize=(20+Math.random()*30)+"px";
-h.style.animation="fall 3s linear forwards";
-document.body.appendChild(h);
-setTimeout(()=>h.remove(),4000);
+  no.style.position = "fixed";
+  no.style.left = r.right + 30 + "px";
+  no.style.top = r.top + "px";
 }
 
-});
+function escapeFast() {
+  const pos = getSafePosition();
 
-// анимация
-const style=document.createElement("style");
-style.innerHTML=`
-@keyframes fall{
-to{transform:translateY(110vh);opacity:0;}
+  // быстрый "рывок"
+  no.style.transition = "0.12s cubic-bezier(.2,.9,.2,1)";
+  no.style.left = pos.x + "px";
+  no.style.top = pos.y + "px";
 }
-`;
-document.head.appendChild(style);
 
+// ПК — убегает при приближении
+no.addEventListener("mouseenter", escapeFast);
+no.addEventListener("mousemove", escapeFast);
+no.addEventListener("click", escapeFast);
+
+// МОБИЛА — убегает от пальца
+document.addEventListener("touchmove", (e) => {
+  const t = e.touches[0];
+  if (!t) return;
+
+  const rect = no.getBoundingClientRect();
+
+  const dx = t.clientX - (rect.left + rect.width / 2);
+  const dy = t.clientY - (rect.top + rect.height / 2);
+
+  const dist = Math.sqrt(dx*dx + dy*dy);
+
+  // чем ближе палец — тем быстрее убегает
+  if (dist < 140) {
+    escapeFast();
+  }
+
+}, { passive: true });
+
+no.addEventListener("touchstart", escapeFast);
+
+window.addEventListener("resize", placeStart);
+
+setTimeout(placeStart, 150);
 </script>
-
-</body>
-</html>
